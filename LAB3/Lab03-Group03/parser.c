@@ -27,9 +27,36 @@ size_t trimstring(char* outputbuffer, const char* inputbuffer, size_t bufferlen)
 //[Output] char* outputbuffer - output string after trimming 
 //[Return] size_t - size of output string after trimming
 size_t firstword(char* outputbuffer, const char* inputbuffer, size_t bufferlen)
+
 {
     //TO DO: Implement this function
-    return 0;
+    // Check for NULL pointers or empty input
+    if (inputbuffer == NULL || outputbuffer == NULL || bufferlen == 0) {
+        return 0;
+    }
+
+    size_t input_len = strlen(inputbuffer);
+    size_t output_len = 0;
+
+    // Iterate through the input string until a space is encountered
+    for (size_t i = 0; i < input_len; i++) {
+        if (inputbuffer[i] == ' ') {
+            break; // Stop when a space is found
+        }
+
+        // Check if there's enough space in the output buffer
+        if (output_len < bufferlen - 1) {
+            outputbuffer[output_len++] = inputbuffer[i];
+        } else {
+            // Output buffer is not large enough, return 0
+            return 0;
+        }
+    }
+
+    // Null-terminate the output string
+    outputbuffer[output_len] = '\0';
+
+    return output_len;
 }
 
 //Command to test that string only contains valid ascii characters (non-control and not extended)
@@ -48,8 +75,8 @@ bool isvalidascii(const char* inputbuffer, size_t bufferlen)
     bool isValid = true;
     for(size_t ii = 0; ii < testlen; ii++)
     {
-        isValid &= ((unsigned char) inputbuffer[ii] <= '~'); //In (lower) ASCII '~' is the last printable character
-    }
+        isValid &= ((unsigned char) inputbuffer[ii] <= '~' && (unsigned char) inputbuffer[ii]>=0); //In (lower) ASCII '~' is the last printable character
+    } // edited the inpute buffer[ii] to check if it is greater than 0 and less than ~ then last ascii characer
 
     return isValid;
 }
@@ -61,6 +88,19 @@ bool isvalidascii(const char* inputbuffer, size_t bufferlen)
 int findpipe(const char* inputbuffer, size_t bufferlen){
     //TO DO: Implement this function
 
+    size_t testlen = bufferlen;
+    size_t stringlength= strlen(inputbuffer);
+    if(strlen(inputbuffer)<bufferlen){
+        testlen = stringlength;
+    }
+
+    for(size_t j=0; j<testlen;j++){
+        if(inputbuffer[j]=='|'){
+            return j;
+        }
+
+    }
+
     return -1;
 }
 
@@ -69,8 +109,32 @@ int findpipe(const char* inputbuffer, size_t bufferlen){
 //[Input] char* inputbuffer - input string to test
 //[Input] size_t bufferlen - size of input buffer
 //[Return] bool - true if string ends with "&"
-bool runinbackground(const char* inputbuffer, size_t bufferlen){
-    //TO DO: Implement this function
+#include <stdbool.h>
+#include <string.h>
+
+bool runinbackground(const char* inputbuffer, size_t bufferlen) {
+    // TO DO implement this function 
+
+
+
+
+    // Check for NULL pointer or empty input
+    if (inputbuffer == NULL || bufferlen == 0) {
+        return false;
+    }
+
+    size_t input_len = strlen(inputbuffer);
+
+    // Check if the input string is at least one character long
+    if (input_len == 0) {
+        return false;
+    }
+
+    // Check if the last character of the input is '&'
+    if (inputbuffer[input_len - 1] == '&') {
+        return true;
+    }
 
     return false;
 }
+
