@@ -13,7 +13,6 @@
 int main() {
     char buffer[1024];
     char* parsedinput;
-    char* parsedcommand;
     char* args[3];
     char newline;
 
@@ -31,9 +30,7 @@ int main() {
         //Clean and parse the input string
         parsedinput = (char*) malloc(BUFLEN * sizeof(char));
         size_t parselength = trimstring(parsedinput, input, BUFLEN);
-
-        parsedcommand = (char*) malloc(BUFLEN * sizeof(char));
-        size_t commandlength = firstword(parsedinput, input, BUFLEN);
+        printf("%ld\n", parselength);
 
         //Sample shell logic implementation
         if ( strcmp(parsedinput, "quit") == 0 ) {
@@ -67,31 +64,6 @@ int main() {
             } else
                 wait(NULL);
         }
-        // clear command
-        else if ( strcmp(parsedinput, "clear") == 0 ) {
-            pid_t forkV = fork();
-            if ( forkV == 0 ) {
-                args[0] = "/usr/bin/";
-                args[1] = NULL;
-                args[2] = NULL;
-                char *envp[] =
-                {
-                    "HOME=/",
-                    "PATH=/bin:/usr/bin",
-                    "TZ=UTC0",
-                    "USER=mackante",
-                    "LOGNAME=mackante",
-                    0
-                };
-                if(execve("/usr/bin/", args, NULL) == -1)
-                {
-                    fprintf(stderr, "Error running command in execve\n");
-                    return -100;
-                }
-
-            } else
-                wait(NULL);           
-        }
         // ls
         else if ( strcmp(parsedinput, "ls") == 0 ) {
             pid_t forkV = fork();
@@ -124,6 +96,30 @@ int main() {
             } else
                 wait(NULL);   
         }
+        // help command
+        else if ( strcmp(parsedinput, "help") == 0 ) {
+            pid_t forkV = fork();
+            if ( forkV == 0 ) {
+                args[0] = "/usr/bin/echo";
+                args[1] = 
+                    "These are a few of our shell feature commands...\n"
+                    "   quit : terminates the shell program\n"
+                    "   ayaya : if you know, then you know, if not then try it and find out\n"
+                    "   date : tells you the current date and time\n"
+                    "   ls : shows the current working directory, which is wherever this is!\n"
+                    "   whatever else : it echoes whatever else you typed!\n"
+                    ;
+                args[2] = NULL;
+                if(execve("/usr/bin/echo", args, NULL) == -1)
+                {
+                    fprintf(stderr, "Error running command in execve\n");
+                    return -100;
+                }
+
+            } else
+                wait(NULL);   
+        }
+
         else { // echo if no command
             pid_t forkV = fork();
             if ( forkV == 0 ) {
