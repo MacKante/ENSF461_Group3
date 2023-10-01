@@ -137,7 +137,9 @@ int main() {
         }
 
         //Remember to free any memory you allocate!
-        free(parsedinput);
+        if(parsedinput != NULL){
+            free(parsedinput);
+        }
     } while ( 1 );
 
     return 0;
