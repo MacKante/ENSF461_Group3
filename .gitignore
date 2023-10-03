@@ -1,1 +1,2 @@
-*.out
+*.out 
+!LAB4/*.out
