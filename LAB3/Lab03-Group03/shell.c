@@ -12,7 +12,7 @@
 
 int main() {
     char buffer[1024];
-    char* parsedinput;
+    char* unparsedinput;
     char* args[3];
     char newline;
 
@@ -28,10 +28,9 @@ int main() {
         }
         
         //Clean and parse the input string
-        parsedinput = (char*) malloc(BUFLEN * sizeof(char));
-        size_t parselength = trimstring(parsedinput, input, BUFLEN);
-        printf("%ld\n", parselength);
-
+        unparsedinput = (char*) malloc(BUFLEN * sizeof(char));
+        char* parsedinput = trimstring(unparsedinput, input, BUFLEN);
+        
         //Sample shell logic implementation
         if ( strcmp(parsedinput, "quit") == 0 ) {
             printf("Bye!!\n");
@@ -137,7 +136,7 @@ int main() {
         }
 
         //Remember to free any memory you allocate!
-        free(parsedinput);
+        free(unparsedinput);
     } while ( 1 );
 
     return 0;

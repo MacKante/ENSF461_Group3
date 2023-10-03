@@ -5,10 +5,9 @@
 //[Input] size_t bufferlen - size of input and output string buffers
 //[Output] char* outputbuffer - output string after trimming 
 //[Return] size_t - size of output string after trimming
-size_t trimstring(char* outputbuffer, const char* inputbuffer, size_t bufferlen)
+char* trimstring(char* outputbuffer, const char* inputbuffer, size_t bufferlen)
 {   
     memcpy(outputbuffer, inputbuffer, bufferlen*sizeof(char));
-
     for(size_t ii = strlen(outputbuffer)-1; ii >=0; ii--){
         if(outputbuffer[ii] < '!') //In ASCII '!' is the first printable (non-control) character
         {
@@ -27,7 +26,31 @@ size_t trimstring(char* outputbuffer, const char* inputbuffer, size_t bufferlen)
         i++;
     }
     outputbuffer += (i*sizeof(char));
-    return strlen(outputbuffer);
+
+    // while loop to get array of command and args
+    // int j = 0;
+    // for(size_t k = 0; k < strlen(outputbuffer)-1; k++) {
+    //     if (outputbuffer[k] ==32) {
+    //         j++;
+    //     }
+    // }
+    // char* tempBuffer;
+    // memcpy(tempBuffer, outputbuffer, strlen(outputbuffer)*sizeof(char));
+    // char* p = strtok(tempBuffer, " ");
+    // char* commandArray[j];
+    // j = 0;
+    // while (p != NULL) {
+    //     commandArray[j] = p;
+    //     p = strtok(NULL, " ");
+    //     j++;
+    // }
+    // printf("\n%s\n", outputbuffer);
+    // printf("\ntest starts here..\n");
+    // for (j = 0; j < 3; j++) 
+    //     printf("%s\n", commandArray[j]);
+    // printf("test5");
+
+    return outputbuffer;
 }
 
 //Command to trim the input command to just be the first word
