@@ -12,10 +12,13 @@
 
 int main() {
     char buffer[1024];
-    char* unparsedinput;
+    char* unparsedInput;
     char* args[3];
     char newline;
 
+    int inputCount;
+
+    
     printf("Welcome to the Group03 shell! Enter commands, enter 'quit' to exit\n");
     do {
         //Print the terminal prompt and get input
@@ -28,32 +31,38 @@ int main() {
         }
         
         //Clean and parse the input string
-        unparsedinput = (char*) malloc(BUFLEN * sizeof(char));
-        char* parsedinput = trimstring(unparsedinput, input, BUFLEN);
+        unparsedInput = (char*) malloc(BUFLEN * sizeof(char));
+        char* parsedInput = trimstring(unparsedInput, input, BUFLEN);
+
+        char **splitInput = split(parsedInput, ' ', &inputCount);
+        
+        for(int i = 0; i < inputCount; i++){
+            printf("%d: %s\n", i, splitInput[i]);
+        }
         
         //Sample shell logic implementation
-        if ( strcmp(parsedinput, "quit") == 0 ) {
+        if ( strcmp(splitInput[0], "quit") == 0 ) {
             printf("Bye!!\n");
             return 0;
         }
         // Ayaya command
-        else if ( strcmp(parsedinput, "ayaya") == 0 ) {
+        else if ( strcmp(splitInput[0], "ayaya") == 0 ) {
             pid_t forkV = fork();
             if ( forkV == 0 ) {
                 args[0] = "/usr/bin/echo";
                 args[1] = "\n⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣬⡛⣿⣿⣿⣯⢻\n"
-                        "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⢻⣿⣿⢟⣻⣿⣿⣿⣿⣿⣿⣮⡻⣿⣿⣧\n"
-                        "⣿⣿⣿⣿⣿⢻⣿⣿⣿⣿⣿⣿⣆⠻⡫⣢⠿⣿⣿⣿⣿⣿⣿⣿⣷⣜⢻⣿\n"
-                        "⣿⣿⡏⣿⣿⣨⣝⠿⣿⣿⣿⣿⣿⢕⠸⣛⣩⣥⣄⣩⢝⣛⡿⠿⣿⣿⣆⢝\n"
-                        "⣿⣿⢡⣸⣿⣏⣿⣿⣶⣯⣙⠫⢺⣿⣷⡈⣿⣿⣿⣿⡿⠿⢿⣟⣒⣋⣙⠊\n"
-                        "⣿⡏⡿⣛⣍⢿⣮⣿⣿⣿⣿⣿⣿⣿⣶⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿\n"
-                        "⣿⢱⣾⣿⣿⣿⣝⡮⡻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⠛⣋⣻⣿⣿⣿⣿\n"
-                        "⢿⢸⣿⣿⣿⣿⣿⣿⣷⣽⣿⣿⣿⣿⣿⣿⣿⡕⣡⣴⣶⣿⣿⣿⡟⣿⣿⣿\n"
-                        "⣦⡸⣿⣿⣿⣿⣿⣿⡛⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⣿⣿⣿\n"
-                        "⢛⠷⡹⣿⠋⣉⣠⣤⣶⣶⣿⣿⣿⣿⣿⣿⡿⠿⢿⣿⣿⣿⣿⣿⣷⢹⣿⣿\n"
-                        "⣷⡝⣿⡞⣿⣿⣿⣿⣿⣿⣿⣿⡟⠋⠁⣠⣤⣤⣦⣽⣿⣿⣿⡿⠋⠘⣿⣿\n"
-                        "⣿⣿⡹⣿⡼⣿⣿⣿⣿⣿⣿⣿⣧⡰⣿⣿⣿⣿⣿⣹⡿⠟⠉⡀⠄⠄⢿⣿\n"
-                        "⣿⣿⣿⣽⣿⣼⣛⠿⠿⣿⣿⣿⣿⣿⣯⣿⠿⢟⣻⡽⢚⣤⡞⠄⠄⠄⢸⣿\n";
+                            "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⢻⣿⣿⢟⣻⣿⣿⣿⣿⣿⣿⣮⡻⣿⣿⣧\n"
+                            "⣿⣿⣿⣿⣿⢻⣿⣿⣿⣿⣿⣿⣆⠻⡫⣢⠿⣿⣿⣿⣿⣿⣿⣿⣷⣜⢻⣿\n"
+                            "⣿⣿⡏⣿⣿⣨⣝⠿⣿⣿⣿⣿⣿⢕⠸⣛⣩⣥⣄⣩⢝⣛⡿⠿⣿⣿⣆⢝\n"
+                            "⣿⣿⢡⣸⣿⣏⣿⣿⣶⣯⣙⠫⢺⣿⣷⡈⣿⣿⣿⣿⡿⠿⢿⣟⣒⣋⣙⠊\n"
+                            "⣿⡏⡿⣛⣍⢿⣮⣿⣿⣿⣿⣿⣿⣿⣶⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿\n"
+                            "⣿⢱⣾⣿⣿⣿⣝⡮⡻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⠛⣋⣻⣿⣿⣿⣿\n"
+                            "⢿⢸⣿⣿⣿⣿⣿⣿⣷⣽⣿⣿⣿⣿⣿⣿⣿⡕⣡⣴⣶⣿⣿⣿⡟⣿⣿⣿\n"
+                            "⣦⡸⣿⣿⣿⣿⣿⣿⡛⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⣿⣿⣿\n"
+                            "⢛⠷⡹⣿⠋⣉⣠⣤⣶⣶⣿⣿⣿⣿⣿⣿⡿⠿⢿⣿⣿⣿⣿⣿⣷⢹⣿⣿\n"
+                            "⣷⡝⣿⡞⣿⣿⣿⣿⣿⣿⣿⣿⡟⠋⠁⣠⣤⣤⣦⣽⣿⣿⣿⡿⠋⠘⣿⣿\n"
+                            "⣿⣿⡹⣿⡼⣿⣿⣿⣿⣿⣿⣿⣧⡰⣿⣿⣿⣿⣿⣹⡿⠟⠉⡀⠄⠄⢿⣿\n"
+                            "⣿⣿⣿⣽⣿⣼⣛⠿⠿⣿⣿⣿⣿⣿⣯⣿⠿⢟⣻⡽⢚⣤⡞⠄⠄⠄⢸⣿\n";
                 args[2] = NULL;
                 if(execve("/usr/bin/echo", args, NULL) == -1)
                 {
@@ -64,7 +73,7 @@ int main() {
                 wait(NULL);
         }
         // ls
-        else if ( strcmp(parsedinput, "ls") == 0 ) {
+        else if ( strcmp(splitInput[0], "ls") == 0 ) {
             pid_t forkV = fork();
             if ( forkV == 0 ) {
                 args[0] = "/usr/bin/ls";
@@ -80,7 +89,7 @@ int main() {
                 wait(NULL);
         }
         // date command       
-        else if ( strcmp(parsedinput, "date") == 0 ) {
+        else if ( strcmp(splitInput[0], "date") == 0 ) {
             pid_t forkV = fork();
             if ( forkV == 0 ) {
                 args[0] = "/usr/bin/date";
@@ -96,7 +105,7 @@ int main() {
                 wait(NULL);   
         }
         // help command
-        else if ( strcmp(parsedinput, "help") == 0 ) {
+        else if ( strcmp(splitInput[0], "help") == 0 ) {
             pid_t forkV = fork();
             if ( forkV == 0 ) {
                 args[0] = "/usr/bin/echo";
@@ -123,7 +132,7 @@ int main() {
             pid_t forkV = fork();
             if ( forkV == 0 ) {
                 args[0] = "/usr/bin/echo";
-                args[1] = parsedinput;
+                args[1] = splitInput[0];
                 args[2] = NULL;
                 if(execve("/usr/bin/echo", args, NULL) == -1)
                 {
@@ -136,9 +145,14 @@ int main() {
         }
 
         //Remember to free any memory you allocate!
-        if(parsedinput != NULL){
-            free(parsedinput);
+        if(parsedInput != NULL){
+            for (int i = 0; i < inputCount; i++) {
+                free(splitInput[i]);
+            }
+            free(splitInput);
         }
+        free(unparsedInput);
+
     } while ( 1 );
 
     return 0;

@@ -139,3 +139,58 @@ bool runinbackground(const char* inputbuffer, size_t bufferlen) {
     return false;
 }
 
+char** split(const char* input, char sep, int* count) {
+    int num = 0;
+    int inside_quotes = 0; // Flag to track if we are inside quotes
+    int i, wordStart = 0, word_i = 0;
+
+    for (i = 0; input[i] != '\0'; i++) {
+        if (input[i] == '"') {
+            inside_quotes = !inside_quotes; // Toggle the inside_quotes flag
+        } else if (input[i] == sep && !inside_quotes) {
+            num++;
+        }
+    }
+    num++;
+
+    char** strings = (char**)malloc(num * sizeof(char*));
+    *count = num;
+
+    for (i = 0; input[i] != '\0'; i++) {
+        if (input[i] == '"') {
+            inside_quotes = !inside_quotes; // Toggle the inside_quotes flag
+        } else if (input[i] == sep && !inside_quotes) {
+            int wordlen = i - wordStart;
+            strings[word_i] = (char*)malloc((wordlen + 1) * sizeof(char));
+            strncpy(strings[word_i], input + wordStart, wordlen);
+            strings[word_i][wordlen] = '\0';
+            wordStart = i + 1;
+            word_i++;
+        }
+    }
+
+    int wordlen = strlen(input) - wordStart;
+    strings[word_i] = (char*)malloc((wordlen + 1) * sizeof(char));
+    strncpy(strings[word_i], input + wordStart, wordlen);
+    strings[word_i][wordlen] = '\0';
+
+    for(int i = 0; i < num; i++){
+        strip(strings[i], '"');
+    }
+
+    return strings;
+}
+
+void strip(char* string, char stripper){
+    int len = strlen(string);
+    int j = 0;
+
+    for(int i = 0; i < len; i++){
+        if (string[i] != stripper){
+            string[j] = string[i];
+            j++;
+        }
+    }
+
+    string[j] = '\0';
+}
