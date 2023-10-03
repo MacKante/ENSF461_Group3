@@ -12,6 +12,7 @@ struct job {
     int id;
     int arrival;
     int length;
+    int startTime;
     struct job *next;
 };
 
@@ -90,14 +91,52 @@ void read_workload_file(char* filename) {
 
 
 void policy_FIFO(struct job *head) {
-  // TODO: Fill this in
+  // TODO: Fill this in 
 
+  printf("Execution trace with FIFO\n");
+  int count = 0;
+  struct job* current = head;
+  for(int i = 0; current != NULL; i++) {
+    current->id = i;
+    current->startTime = count;
+    printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", 
+            count, current->id, current->arrival, current->length);
+    count += current->length;
+
+    current = current->next;
+  }
+  printf("End of execution with FIFO.\n");
   return;
 }
 
 void analyze_FIFO(struct job *head) {
   // TODO: Fill this in
 
+  int fifo_Flag = 0;
+  struct job* current = head;
+
+  float ave_Response = 0;
+  float ave_Turnaround = 0;
+  float total_Response = 0;
+  float total_Turnaround = 0;
+
+  int i = 0;
+  while(current != NULL) {
+    int turnaround = current->length + current->startTime -current->arrival;
+    printf("Job %d -- Response time: %d Turnaround: %d Wait: %d\n",
+            current->id, current->startTime, turnaround, current->startTime);
+    
+    total_Response += current->startTime;
+    total_Turnaround += turnaround;
+    current = current->next;
+    i++;
+  }
+
+  ave_Response = total_Response / i;
+  ave_Turnaround = total_Turnaround / i;
+  printf("Average -- Response: %.2f Turnaround %.2f Wait %.2f\n",
+          ave_Response, ave_Turnaround, ave_Response);
+  
   return;
 }
 
