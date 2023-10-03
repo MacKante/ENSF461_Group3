@@ -37,9 +37,11 @@ int main() {
             // do nothing
         } else {
             char **splitInput = split(parsedInput, ' ', &inputCount);
-            for(int i = 0; i < inputCount; i++){
-                printf("%d: %s\n", i, splitInput[i]);
-            }
+            
+            // Split input tester
+            // for(int i = 0; i < inputCount; i++){
+            //     printf("%d: %s\n", i, splitInput[i]);
+            // }
             
             //Sample shell logic implementation
             if ( strcmp(splitInput[0], "quit") == 0 ) {
@@ -133,7 +135,7 @@ int main() {
                 pid_t forkV = fork();
                 if ( forkV == 0 ) {
                     args[0] = "/usr/bin/echo";
-                    args[1] = splitInput[0];
+                    args[1] = parsedInput;
                     args[2] = NULL;
                     if(execve("/usr/bin/echo", args, NULL) == -1)
                     {
