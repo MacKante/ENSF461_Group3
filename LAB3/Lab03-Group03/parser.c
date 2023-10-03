@@ -9,6 +9,9 @@ char* trimstring(char* outputbuffer, const char* inputbuffer, size_t bufferlen)
 {   
     memcpy(outputbuffer, inputbuffer, bufferlen*sizeof(char));
     for(size_t ii = strlen(outputbuffer)-1; ii >=0; ii--){
+        if (ii == -1) {
+            return NULL;
+        }
         if(outputbuffer[ii] < '!') //In ASCII '!' is the first printable (non-control) character
         {
             outputbuffer[ii] = 0;
