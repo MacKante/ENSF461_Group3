@@ -26,30 +26,6 @@ char* trimstring(char* outputbuffer, const char* inputbuffer, size_t bufferlen)
         i++;
     }
     outputbuffer += (i*sizeof(char));
-
-    // while loop to get array of command and args
-    // int j = 0;
-    // for(size_t k = 0; k < strlen(outputbuffer)-1; k++) {
-    //     if (outputbuffer[k] ==32) {
-    //         j++;
-    //     }
-    // }
-    // char* tempBuffer;
-    // memcpy(tempBuffer, outputbuffer, strlen(outputbuffer)*sizeof(char));
-    // char* p = strtok(tempBuffer, " ");
-    // char* commandArray[j];
-    // j = 0;
-    // while (p != NULL) {
-    //     commandArray[j] = p;
-    //     p = strtok(NULL, " ");
-    //     j++;
-    // }
-    // printf("\n%s\n", outputbuffer);
-    // printf("\ntest starts here..\n");
-    // for (j = 0; j < 3; j++) 
-    //     printf("%s\n", commandArray[j]);
-    // printf("test5");
-
     return outputbuffer;
 }
 
