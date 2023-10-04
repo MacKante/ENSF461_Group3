@@ -16,6 +16,6 @@ int findpipe(const char* inputbuffer, size_t bufferlen);
 bool runinbackground(const char* inputbuffer, size_t bufferlen);
 
 char** split(const char* input, char sep, int* count);
-void strip(char* string, char stripper);
+char* strip(char* string, char stripper);
 
 #endif

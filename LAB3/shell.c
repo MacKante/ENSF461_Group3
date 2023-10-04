@@ -39,12 +39,36 @@ int main() {
             char **splitInput = split(parsedInput, ' ', &inputCount);
             
             //Split input tester
+
             // for(int i = 0; i < inputCount; i++){
             //     printf("%d: %s\n", i, splitInput[i]);
             // }
+
+            // not absolute path
+            if(access(splitInput[0], F_OK) == 0){
+                pid_t forkV = fork();
+                char *path;
+                char * const envp[] = {path, NULL};
+                if ( forkV == 0 ) {
+                    path = NULL;
+                    if (splitInput[0][0] != '/') {
+                        path = getenv("PATH");
+                        printf("Executing in: %s\n", envp);
+                    }
+                    
+                    if(execve(splitInput[0], splitInput, envp))
+                    {
+                        fprintf(stderr, "Error running command in execve\n");
+                        return -100;
+                    } 
+                } else 
+                    wait(NULL); 
+            }
+            
+            // Check if /usr/bin/{input} exists
             
             //Sample shell logic implementation
-            if ( strcmp(splitInput[0], "quit") == 0 ) {
+            else if (strcmp(splitInput[0], "quit") == 0 ) {
                 printf("Bye!!\n");
                 return 0;
             }
@@ -99,9 +123,10 @@ int main() {
                         wait(NULL); 
                 }
             } 
+
 /*-----------------------------------------------------------------------------------------------------------*/
             // ls
-            else if ( strcmp(splitInput[0], "ls") == 0 ) {
+            else if (strcmp(splitInput[0], "ls") == 0 ) {
                 pid_t forkV = fork();
                 if ( forkV == 0 ) {
                     args[0] = "/usr/bin/ls";
@@ -133,6 +158,7 @@ int main() {
                 } else
                     wait(NULL);   
             }
+
 /*-----------------------------------------------------------------------------------------------------------*/
             // help command
             else if ( strcmp(splitInput[0], "help") == 0 ) {
@@ -143,6 +169,7 @@ int main() {
                         "These are a few of our shell feature commands...\n"
                         "   quit : terminates the shell program\n"
                         "   ayaya : if you know, then you know, if not then try it and find out\n"
+                        "       -r [times] : do it [times] times!\n"
                         "   date : tells you the current date and time\n"
                         "   ls : shows the current working directory, which is wherever this is!\n"
                         "   whatever else : it echoes whatever else you typed!\n"
@@ -157,6 +184,8 @@ int main() {
                 } else
                     wait(NULL);   
             }
+
+
 /*-----------------------------------------------------------------------------------------------------------*/
             else { // echo if no command
                 pid_t forkV = fork();
