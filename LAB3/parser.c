@@ -178,13 +178,13 @@ char** split(const char* input, char sep, int* count) {
     strings[word_i][wordlen] = '\0';
 
     for(int i = 0; i < num; i++){
-        strip(strings[i], '"');
+        strip(strings[i], '"');   //in case we do need to strip quotation marks
     }
-
+    
     return strings;
 }
 
-void strip(char* string, char stripper){
+char* strip(char* string, char stripper){
     int len = strlen(string);
     int j = 0;
 
@@ -196,4 +196,6 @@ void strip(char* string, char stripper){
     }
 
     string[j] = '\0';
+
+    return string;
 }
