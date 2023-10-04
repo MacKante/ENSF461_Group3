@@ -38,7 +38,7 @@ int main() {
         } else {
             char **splitInput = split(parsedInput, ' ', &inputCount);
             
-            // Split input tester
+            //Split input tester
             // for(int i = 0; i < inputCount; i++){
             //     printf("%d: %s\n", i, splitInput[i]);
             // }
@@ -48,33 +48,58 @@ int main() {
                 printf("Bye!!\n");
                 return 0;
             }
+
+/*-----------------------------------------------------------------------------------------------------------*/
             // Ayaya command
             else if ( strcmp(splitInput[0], "ayaya") == 0 ) {
-                pid_t forkV = fork();
-                if ( forkV == 0 ) {
-                    args[0] = "/usr/bin/echo";
-                    args[1] = "\n⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣬⡛⣿⣿⣿⣯⢻\n"
-                                "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⢻⣿⣿⢟⣻⣿⣿⣿⣿⣿⣿⣮⡻⣿⣿⣧\n"
-                                "⣿⣿⣿⣿⣿⢻⣿⣿⣿⣿⣿⣿⣆⠻⡫⣢⠿⣿⣿⣿⣿⣿⣿⣿⣷⣜⢻⣿\n"
-                                "⣿⣿⡏⣿⣿⣨⣝⠿⣿⣿⣿⣿⣿⢕⠸⣛⣩⣥⣄⣩⢝⣛⡿⠿⣿⣿⣆⢝\n"
-                                "⣿⣿⢡⣸⣿⣏⣿⣿⣶⣯⣙⠫⢺⣿⣷⡈⣿⣿⣿⣿⡿⠿⢿⣟⣒⣋⣙⠊\n"
-                                "⣿⡏⡿⣛⣍⢿⣮⣿⣿⣿⣿⣿⣿⣿⣶⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿\n"
-                                "⣿⢱⣾⣿⣿⣿⣝⡮⡻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⠛⣋⣻⣿⣿⣿⣿\n"
-                                "⢿⢸⣿⣿⣿⣿⣿⣿⣷⣽⣿⣿⣿⣿⣿⣿⣿⡕⣡⣴⣶⣿⣿⣿⡟⣿⣿⣿\n"
-                                "⣦⡸⣿⣿⣿⣿⣿⣿⡛⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⣿⣿⣿\n"
-                                "⢛⠷⡹⣿⠋⣉⣠⣤⣶⣶⣿⣿⣿⣿⣿⣿⡿⠿⢿⣿⣿⣿⣿⣿⣷⢹⣿⣿\n"
-                                "⣷⡝⣿⡞⣿⣿⣿⣿⣿⣿⣿⣿⡟⠋⠁⣠⣤⣤⣦⣽⣿⣿⣿⡿⠋⠘⣿⣿\n"
-                                "⣿⣿⡹⣿⡼⣿⣿⣿⣿⣿⣿⣿⣧⡰⣿⣿⣿⣿⣿⣹⡿⠟⠉⡀⠄⠄⢿⣿\n"
-                                "⣿⣿⣿⣽⣿⣼⣛⠿⠿⣿⣿⣿⣿⣿⣯⣿⠿⢟⣻⡽⢚⣤⡞⠄⠄⠄⢸⣿\n";
-                    args[2] = NULL;
-                    if(execve("/usr/bin/echo", args, NULL) == -1)
-                    {
-                        fprintf(stderr, "Error running command in execve\n");
-                        return -100;
+                int repeat = 1;
+
+                for(int i = 1; i < inputCount; i++){
+                    if(strcmp(splitInput[i], "-r") == 0){
+                        if((i + 1 == inputCount)){
+                            repeat = 0;
+                            printf("No Argument after -r\n");
+                            break;
+                        }
+                        if(atoi(splitInput[i + 1]) == 0 ){
+                            repeat = 0;
+                            printf("Invalid Argument: %s\n", splitInput[i+1]);
+                            break; 
+                        }
+                        repeat = atoi(splitInput[i+1]);
+                        printf("repeating %d times...\n", repeat);
+                        break;
                     }
-                } else
-                    wait(NULL);
-            }
+                }
+                    
+                for(int i = 0; i < repeat; i++) {
+                    pid_t forkV = fork();
+                    if ( forkV == 0 ) {
+                        args[0] = "/usr/bin/echo";
+                        args[1] = "\n⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣬⡛⣿⣿⣿⣯⢻\n"
+                                    "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⢻⣿⣿⢟⣻⣿⣿⣿⣿⣿⣿⣮⡻⣿⣿⣧\n"
+                                    "⣿⣿⣿⣿⣿⢻⣿⣿⣿⣿⣿⣿⣆⠻⡫⣢⠿⣿⣿⣿⣿⣿⣿⣿⣷⣜⢻⣿\n"
+                                    "⣿⣿⡏⣿⣿⣨⣝⠿⣿⣿⣿⣿⣿⢕⠸⣛⣩⣥⣄⣩⢝⣛⡿⠿⣿⣿⣆⢝\n"
+                                    "⣿⣿⢡⣸⣿⣏⣿⣿⣶⣯⣙⠫⢺⣿⣷⡈⣿⣿⣿⣿⡿⠿⢿⣟⣒⣋⣙⠊\n"
+                                    "⣿⡏⡿⣛⣍⢿⣮⣿⣿⣿⣿⣿⣿⣿⣶⣶⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿\n"
+                                    "⣿⢱⣾⣿⣿⣿⣝⡮⡻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠿⠛⣋⣻⣿⣿⣿⣿\n"
+                                    "⢿⢸⣿⣿⣿⣿⣿⣿⣷⣽⣿⣿⣿⣿⣿⣿⣿⡕⣡⣴⣶⣿⣿⣿⡟⣿⣿⣿\n"
+                                    "⣦⡸⣿⣿⣿⣿⣿⣿⡛⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⣿⣿⣿\n"
+                                    "⢛⠷⡹⣿⠋⣉⣠⣤⣶⣶⣿⣿⣿⣿⣿⣿⡿⠿⢿⣿⣿⣿⣿⣿⣷⢹⣿⣿\n"
+                                    "⣷⡝⣿⡞⣿⣿⣿⣿⣿⣿⣿⣿⡟⠋⠁⣠⣤⣤⣦⣽⣿⣿⣿⡿⠋⠘⣿⣿\n"
+                                    "⣿⣿⡹⣿⡼⣿⣿⣿⣿⣿⣿⣿⣧⡰⣿⣿⣿⣿⣿⣹⡿⠟⠉⡀⠄⠄⢿⣿\n"
+                                    "⣿⣿⣿⣽⣿⣼⣛⠿⠿⣿⣿⣿⣿⣿⣯⣿⠿⢟⣻⡽⢚⣤⡞⠄⠄⠄⢸⣿\n";
+                        args[2] = NULL;
+                        if(execve("/usr/bin/echo", args, NULL) == -1)
+                        {
+                            fprintf(stderr, "Error running command in execve\n");
+                            return -100;
+                        }
+                    } else 
+                        wait(NULL); 
+                }
+            } 
+/*-----------------------------------------------------------------------------------------------------------*/
             // ls
             else if ( strcmp(splitInput[0], "ls") == 0 ) {
                 pid_t forkV = fork();
@@ -91,6 +116,7 @@ int main() {
                 } else
                     wait(NULL);
             }
+/*-----------------------------------------------------------------------------------------------------------*/
             // date command       
             else if ( strcmp(splitInput[0], "date") == 0 ) {
                 pid_t forkV = fork();
@@ -107,6 +133,7 @@ int main() {
                 } else
                     wait(NULL);   
             }
+/*-----------------------------------------------------------------------------------------------------------*/
             // help command
             else if ( strcmp(splitInput[0], "help") == 0 ) {
                 pid_t forkV = fork();
@@ -130,7 +157,7 @@ int main() {
                 } else
                     wait(NULL);   
             }
-
+/*-----------------------------------------------------------------------------------------------------------*/
             else { // echo if no command
                 pid_t forkV = fork();
                 if ( forkV == 0 ) {
