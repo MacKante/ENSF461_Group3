@@ -13,6 +13,7 @@ struct job {
     int arrival;
     int length;
     int startTime;
+    struct job *before;     // NOW IT IS A DOUBLY LINKED LIST
     struct job *next;
 };
 
@@ -33,9 +34,7 @@ void append(int id, int arrival, int length){
   tmp->id = id;
   tmp->length = length;
   tmp->arrival = arrival;
-
-  // the new job is the last job
-  tmp->next = NULL;
+  tmp->before = NULL;
 
   // Case: job is first to be added, linked list is empty 
   if (head == NULL){
@@ -52,6 +51,10 @@ void append(int id, int arrival, int length){
 
   //Add job to end of list 
   prev->next = tmp;
+
+  // set before of the new job as the previous end
+  tmp->before = prev;
+
   return;
 }
 
@@ -89,11 +92,11 @@ void read_workload_file(char* filename) {
   return;
 }
 
+/*----------------------------------------------------------------------------------------*/
 
 void policy_FIFO(struct job *head) {
   // TODO: Fill this in 
-
-  printf("Execution trace with FIFO\n");
+  printf("\nExecution trace with FIFO\n");
   int count = 0;
   struct job* current = head;
   for(int i = 0; current != NULL; i++) {
@@ -139,6 +142,43 @@ void analyze_FIFO(struct job *head) {
   
   return;
 }
+/*----------------------------------------------------------------------------------------*/
+
+void policy_SJF(struct job* head) { // !!!!! its not finished yet, definitely still fucked up. ground work tho
+  
+  struct job* jobArray[10];
+  int i = 0;
+
+  struct job* tempShort = head->next;          // temp shortest
+  struct job* current = head;
+
+  while (tempShort != NULL) {
+    while (current != NULL) {
+      if (current->length < tempShort->length) { // if current < tempShortest
+        tempShort = current;                     // find shortest job
+      }
+      current = current->next;
+    }
+    
+    tempShort->next->before = tempShort->before; // set before of tempShort next as before of tempShort
+    tempShort->before->next = tempShort->next;   // set next of tempShort before as next of tempShort
+
+    tempShort->next = NULL;                      // set before and next of tempShort to 
+    tempShort->before = NULL;
+    jobArray[i] = tempShort;
+    i++;
+
+    current = head;                              
+    tempShort = head->next;
+  }
+
+}
+
+void analyze_SJF(struct job* head) {
+
+}
+
+/*----------------------------------------------------------------------------------------*/
 
 int main(int argc, char **argv) {
 
