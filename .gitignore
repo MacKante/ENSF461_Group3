@@ -1,2 +1,6 @@
-*.out 
-!LAB4/*.out
+*.out
+
+!example_fifo.out
+!example_fifo_analysis.out
+!example_sjf.out
+!example_sjf_analysis.out
