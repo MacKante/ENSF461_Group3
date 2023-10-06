@@ -144,34 +144,41 @@ void analyze_FIFO(struct job *head) {
 }
 /*----------------------------------------------------------------------------------------*/
 
-void policy_SJF(struct job* head) { // !!!!! its not finished yet, definitely still fucked up. ground work tho
-  
+void policy_SJF(struct job* head) { // !!!!! its not finished yet, definitely still fucked up. ground work tho LETS GOOO
   struct job* jobArray[10];
-  int i = 0;
 
-  struct job* tempShort = head->next;          // temp shortest
-  struct job* current = head;
+  struct job* tempShort;          // temp shortest
+  struct job* current;
 
-  while (tempShort != NULL) {
+  int count = 0;
+
+  for(int i = 0; tempShort != NULL; i++) {
+    current = head;
+    tempShort = head->next;
+
     while (current != NULL) {
       if (current->length < tempShort->length) { // if current < tempShortest
-        tempShort = current;                     // find shortest job
+        tempShort = current;                     // job is shorter
       }
       current = current->next;
     }
     
     tempShort->next->before = tempShort->before; // set before of tempShort next as before of tempShort
     tempShort->before->next = tempShort->next;   // set next of tempShort before as next of tempShort
+    tempShort->next = NULL;                      // set before and next of tempShort to NULL
+    tempShort->before = NULL;                    // basically "pop" the job out
+    
+    printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", 
+        count, tempShort->id, tempShort->arrival, tempShort->length); // "run" the job
 
-    tempShort->next = NULL;                      // set before and next of tempShort to 
-    tempShort->before = NULL;
-    jobArray[i] = tempShort;
-    i++;
-
-    current = head;                              
-    tempShort = head->next;
+    count += tempShort->length;
+  // actually it might be wrong depending on how the scheduler works, 
+  // because what happens if the start time is past the current starting time?
+  
+  // we'll figure it out later
+  // gonna push to git for now
+  
   }
-
 }
 
 void analyze_SJF(struct job* head) {
