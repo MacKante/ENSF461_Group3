@@ -92,14 +92,83 @@ void read_workload_file(char* filename) {
   return;
 }
 
+/*---------------------------------------------------*/
+void policy_STCF(struct job* head, int slice) {
+  // TO DO FIXN THIS 
+    struct job* current = head;
+    struct job* next_job = NULL;
+    int time = 0;
 
-void policy_STCF(struct job *head, int slice) {
+    while (current != NULL) {
+        // Find the job with the shortest remaining time
+        next_job = head;
+        while (next_job != NULL) {
+            if (next_job->arrival <= time) {
+                if (next_job->length < current->length) {
+                    current = next_job;
+                }
+            }
+            next_job = next_job->next;
+        }
+
+        // Execute the current job for 'slice' time units
+        if (current->length > slice) {
+            current->length -= slice;
+            time += slice;
+        } else {
+            time += current->length;
+            current->length = 0;
+        }
+
+        // Move to the next time unit
+        current = current->next;
+    }
+}
+void analyze_STCF(struct job *head) {
   // TODO: Fill this in
 
   return;
 }
 
-void analyze_STCF(struct job *head) {
+/*---------------------------------------------------*/
+
+void policy_RR(struct job* head, int slice) {
+    struct job* current = head;
+    int time = 0;
+
+    while (current != NULL) {
+        // Execute the current job for 'slice' time units
+        if (current->length > slice) {
+            current->length -= slice;
+            time += slice;
+        } else {
+            time += current->length;
+            current->length = 0;
+        }
+
+        // Move to the next job in a round-robin fashion
+        current = current->next;
+        if (current == NULL) {
+            current = head;
+        }
+    }
+}
+
+void analyze_RR(struct job *head) {
+  // TODO: Fill this in
+
+  return;
+}
+
+/*------------------------------------------------------*/
+
+void policy_LT(struct job *head, int slice) {
+  // TODO: Fill this in
+
+  return;
+}
+
+void analyze_LT(struct job *head) {
   // TODO: Fill this in
 
   return;
@@ -133,7 +202,29 @@ int main(int argc, char **argv) {
     exit(EXIT_SUCCESS);
   }
 
-  // TODO: Add other policies 
+  // TODO: Add other policies
+
+  if (strcmp(policy, "RR") == 0 ) {
+    policy_STCF(head, slice);
+    if (analysis) {
+      printf("Begin analyzing RR:\n");
+      analyze_STCF(head);
+      printf("End analyzing RR.\n");
+    }
+
+    exit(EXIT_SUCCESS);
+  }
+
+  if (strcmp(policy, "LT") == 0 ) {
+    policy_STCF(head, slice);
+    if (analysis) {
+      printf("Begin analyzing LT:\n");
+      analyze_STCF(head);
+      printf("End analyzing LT.\n");
+    }
+
+    exit(EXIT_SUCCESS);
+  } 
 
 	exit(EXIT_SUCCESS);
 }
