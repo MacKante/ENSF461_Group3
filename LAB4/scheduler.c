@@ -5,8 +5,6 @@
 #include <string.h>
 #include <limits.h>
 
-
-
 // TODO: Add more fields to this struct
 struct job {
     int id;
@@ -26,7 +24,7 @@ struct job *head = NULL;
 /*** Globals End ***/
 
 void swapNodes(struct job* job1, struct job* job2);
-void Sort(struct job* head);
+void sortList(struct job* head);
 
 /*Function to append a new job to the list*/
 void append(int id, int arrival, int length){
@@ -45,18 +43,18 @@ void append(int id, int arrival, int length){
     return;
   }
 
-  struct job *prev = head;
+  struct job *before = head;
 
   //Find end of list 
-  while (prev->next != NULL){
-    prev = prev->next;
+  while (before->next != NULL){
+    before = before->next;
   }
 
   //Add job to end of list 
-  prev->next = tmp;
+  before->next = tmp;
 
-  // set before of the new job as the previous end
-  tmp->before = prev;
+  // set before of the new job as the beforeious end
+  tmp->before = before;
 
   return;
 }
@@ -148,24 +146,17 @@ void analyze_FIFO(struct job *head) {
 /*----------------------------------------------------------------------------------------*/
 
 void policy_SJF(struct job* head) { // !!!!! its not finished yet, definitely still fucked up. ground work tho LETS GOOO
+  sortList(head);
+  int count = 0;  
   struct job* current = head;
-  int count = 0;
 
   for(int i = 0; current != NULL; i++){
-    printf("here!\n");
-    current->id = i;
-    current = current->next;
-  }
-
-  Sort(head);
-  current = head;
-
-  for(int i = 0; current->next != NULL; i++)
     printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", 
         count, current->id, current->arrival, current->length); // "run" the job
     count += current->length;
     current = current->next;
   }
+}
 
 void analyze_SJF(struct job* head) {
 
@@ -210,48 +201,50 @@ int main(int argc, char **argv) {
     }
 
     exit(EXIT_SUCCESS);
-  } 
+  }
 
 	exit(EXIT_SUCCESS);
 }
 
-void Sort(struct job* head) {
-    if (head == NULL || head->next == NULL) {
-        return;
-    }
-    struct job* current = head->next;
-    while(current != NULL) {
-        // next is to specify which node to try and sort next
-        struct job* next = current->next;
-        //while prev.data > current.data, then make prev into current
-        while(current->before != NULL && current->before->length > current->length){
-            // swapNodes is just to swap two nodes with each other
-            swapNodes(current->before, current);
-        }
-        current = next;
-    }
+void swapNodes(struct job* job1, struct job* job2) {
+  // Assuming job1 and job2 are adjacent and job 1 is > job2 and we want our list to be in ascending order
+  int temp_id = job1->id;
+  int temp_arrival = job1->arrival;
+  int temp_length = job1->length;
+  int temp_startTime = job1->startTime;
+
+  job1->id = job2->id;
+  job1->arrival = job2->arrival;
+  job1->length = job2->length;
+  job1->startTime = job2->startTime;
+  
+  job2->id = temp_id;
+  job2->arrival = temp_arrival;
+  job2->length = temp_length;
+  job2->startTime = temp_startTime;
 }
 
-void swapNodes(struct job* job1, struct job* job2) {
-        struct job* tempPrev = job1->before;
-        struct job* tempNext = job2->before;
+// Function to sort the doubly linked list using node swapping
+void sortList(struct job* head) {
+  if (head == NULL) {
+      return;
+  }
 
-        if (tempPrev != NULL) {
-            tempPrev->next = job2;
-        } else {
-            head = job2;
-        }
+  int swapped;
+  struct job* job1;
+  struct job* job2 = NULL;
 
-        if (tempNext != NULL) {
-            tempNext->before = job1;
-        } else {
-          // do something
-        }
+  while(swapped) {
+    swapped = 0;
+    job1 = head;
 
-        job1->next = tempNext;
-        job2->before = tempPrev;
-
-        job2->next = job1;
-        job1->before = job2;
+    while (job1->next != job2) {
+      if (job1->length > job1->next->length) {
+          swapNodes(job1, job1->next);
+          swapped = 1;
+      }
+      job1 = job1->next;
     }
-
+    job2 = job1;
+  }
+}
