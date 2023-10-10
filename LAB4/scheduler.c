@@ -25,6 +25,9 @@ struct job *head = NULL;
 
 /*** Globals End ***/
 
+void swapNodes(struct job* job1, struct job* job2);
+void Sort(struct job* head);
+
 /*Function to append a new job to the list*/
 void append(int id, int arrival, int length){
   // create a new struct and initialize it with the input data
@@ -145,41 +148,24 @@ void analyze_FIFO(struct job *head) {
 /*----------------------------------------------------------------------------------------*/
 
 void policy_SJF(struct job* head) { // !!!!! its not finished yet, definitely still fucked up. ground work tho LETS GOOO
-  struct job* jobArray[10];
-
-  struct job* tempShort;          // temp shortest
-  struct job* current;
-
+  struct job* current = head;
   int count = 0;
 
-  for(int i = 0; tempShort != NULL; i++) {
-    current = head;
-    tempShort = head->next;
-
-    while (current != NULL) {
-      if (current->length < tempShort->length) { // if current < tempShortest
-        tempShort = current;                     // job is shorter
-      }
-      current = current->next;
-    }
-    
-    tempShort->next->before = tempShort->before; // set before of tempShort next as before of tempShort
-    tempShort->before->next = tempShort->next;   // set next of tempShort before as next of tempShort
-    tempShort->next = NULL;                      // set before and next of tempShort to NULL
-    tempShort->before = NULL;                    // basically "pop" the job out
-    
-    printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", 
-        count, tempShort->id, tempShort->arrival, tempShort->length); // "run" the job
-
-    count += tempShort->length;
-  // actually it might be wrong depending on how the scheduler works, 
-  // because what happens if the start time is past the current starting time?
-  
-  // we'll figure it out later
-  // gonna push to git for now
-  
+  for(int i = 0; current != NULL; i++){
+    printf("here!\n");
+    current->id = i;
+    current = current->next;
   }
-}
+
+  Sort(head);
+  current = head;
+
+  for(int i = 0; current->next != NULL; i++)
+    printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", 
+        count, current->id, current->arrival, current->length); // "run" the job
+    count += current->length;
+    current = current->next;
+  }
 
 void analyze_SJF(struct job* head) {
 
@@ -214,7 +200,58 @@ int main(int argc, char **argv) {
     exit(EXIT_SUCCESS);
   }
 
-  // TODO: Add other policies 
+  // TODO: Add other policies
+  if (strcmp(policy, "SJF") == 0 ) {
+    policy_SJF(head);
+    if (analysis) {
+      printf("Begin analyzing SJF:\n");
+      analyze_SJF(head);
+      printf("End analyzing SJF.\n");
+    }
+
+    exit(EXIT_SUCCESS);
+  } 
 
 	exit(EXIT_SUCCESS);
 }
+
+void Sort(struct job* head) {
+    if (head == NULL || head->next == NULL) {
+        return;
+    }
+    struct job* current = head->next;
+    while(current != NULL) {
+        // next is to specify which node to try and sort next
+        struct job* next = current->next;
+        //while prev.data > current.data, then make prev into current
+        while(current->before != NULL && current->before->length > current->length){
+            // swapNodes is just to swap two nodes with each other
+            swapNodes(current->before, current);
+        }
+        current = next;
+    }
+}
+
+void swapNodes(struct job* job1, struct job* job2) {
+        struct job* tempPrev = job1->before;
+        struct job* tempNext = job2->before;
+
+        if (tempPrev != NULL) {
+            tempPrev->next = job2;
+        } else {
+            head = job2;
+        }
+
+        if (tempNext != NULL) {
+            tempNext->before = job1;
+        } else {
+          // do something
+        }
+
+        job1->next = tempNext;
+        job2->before = tempPrev;
+
+        job2->next = job1;
+        job1->before = job2;
+    }
+
