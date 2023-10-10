@@ -17,14 +17,17 @@ struct job {
 
 /*** Globals ***/ 
 int seed = 100;
+char* filename;
 
 //This is the start of our linked list of jobs, i.e., the job list
 struct job *head = NULL;
-
 /*** Globals End ***/
 
+/*** Extra function declarations ***/
 void swapNodes(struct job* job1, struct job* job2);
 void sortList(struct job* head);
+void sortID(struct job* head);
+/*** Extra function declarations end ***/
 
 /*Function to append a new job to the list*/
 void append(int id, int arrival, int length){
@@ -59,7 +62,6 @@ void append(int id, int arrival, int length){
   return;
 }
 
-
 /*Function to read in the workload file and create job list*/
 void read_workload_file(char* filename) {
   int id = 0;
@@ -93,30 +95,73 @@ void read_workload_file(char* filename) {
   return;
 }
 
-/*----------------------------------------------------------------------------------------*/
+/*--------------------------------------------SJF--------------------------------------------*/
 
 void policy_FIFO(struct job *head) {
   // TODO: Fill this in 
   printf("\nExecution trace with FIFO\n");
   int count = 0;
   struct job* current = head;
+  
   for(int i = 0; current != NULL; i++) {
-    current->id = i;
-    current->startTime = count;
     printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", 
             count, current->id, current->arrival, current->length);
+    current->startTime = count;
     count += current->length;
 
     current = current->next;
   }
-  printf("End of execution with FIFO.\n");
+  printf("End of execution with FIFO.\n");;
   return;
 }
 
 void analyze_FIFO(struct job *head) {
-  // TODO: Fill this in
+  struct job* current = head;
 
-  int fifo_Flag = 0;
+  float ave_Response = 0;
+  float ave_Turnaround = 0;
+  float total_Response = 0;
+  float total_Turnaround = 0;
+  
+  int i = 0;
+
+  while(current != NULL) {
+    int turnaround = current->length + current->startTime - current->arrival;
+    
+    printf("Job %d -- Response time: %d Turnaround: %d Wait: %d\n",
+            current->id, current->startTime, turnaround, current->startTime);
+    
+    total_Response += current->startTime;
+    total_Turnaround += turnaround;
+    current = current->next;
+    i++;
+  }
+  
+  ave_Response = total_Response / i;
+  ave_Turnaround = total_Turnaround / i;
+  printf("Average -- Response: %.2f Turnaround %.2f Wait %.2f\n",
+          ave_Response, ave_Turnaround, ave_Response);
+
+  return;
+}
+/*------------------------------------------SJF-------------------------------------------*/
+
+void policy_SJF(struct job* head) {
+  sortList(head);
+  int count = 0;  
+  struct job* current = head;
+
+  for(int i = 0; current != NULL; i++){
+    printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", 
+        count, current->id, current->arrival, current->length); // "run" the job
+    current->startTime = count;
+    count += current->length;
+    current = current->next;
+  }
+}
+
+void analyze_SJF(struct job* head) {
+  sortID(head);
   struct job* current = head;
 
   float ave_Response = 0;
@@ -126,9 +171,10 @@ void analyze_FIFO(struct job *head) {
 
   int i = 0;
   while(current != NULL) {
-    int turnaround = current->length + current->startTime -current->arrival;
+    int response  = current->startTime - current->arrival;
+    int turnaround = current->length + current->startTime - current->arrival;
     printf("Job %d -- Response time: %d Turnaround: %d Wait: %d\n",
-            current->id, current->startTime, turnaround, current->startTime);
+            current->id, current->startTime, turnaround, response);
     
     total_Response += current->startTime;
     total_Turnaround += turnaround;
@@ -142,27 +188,10 @@ void analyze_FIFO(struct job *head) {
           ave_Response, ave_Turnaround, ave_Response);
   
   return;
-}
-/*----------------------------------------------------------------------------------------*/
-
-void policy_SJF(struct job* head) { // !!!!! its not finished yet, definitely still fucked up. ground work tho LETS GOOO
-  sortList(head);
-  int count = 0;  
-  struct job* current = head;
-
-  for(int i = 0; current != NULL; i++){
-    printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", 
-        count, current->id, current->arrival, current->length); // "run" the job
-    count += current->length;
-    current = current->next;
-  }
+  
 }
 
-void analyze_SJF(struct job* head) {
-
-}
-
-/*----------------------------------------------------------------------------------------*/
+/*-----------------------------------------MAIN------------------------------------------*/
 
 int main(int argc, char **argv) {
 
@@ -206,6 +235,7 @@ int main(int argc, char **argv) {
 	exit(EXIT_SUCCESS);
 }
 
+/* ---------------------------------------------- Extra Functions needed ---------------------------------------------- */
 void swapNodes(struct job* job1, struct job* job2) {
   // Assuming job1 and job2 are adjacent and job 1 is > job2 and we want our list to be in ascending order
   int temp_id = job1->id;
@@ -240,6 +270,30 @@ void sortList(struct job* head) {
 
     while (job1->next != job2) {
       if (job1->length > job1->next->length) {
+          swapNodes(job1, job1->next);
+          swapped = 1;
+      }
+      job1 = job1->next;
+    }
+    job2 = job1;
+  }
+}
+
+void sortID(struct job* head) {
+  if (head == NULL) {
+      return;
+  }
+
+  int swapped;
+  struct job* job1;
+  struct job* job2 = NULL;
+
+  while(swapped) {
+    swapped = 0;
+    job1 = head;
+
+    while (job1->next != job2) {
+      if (job1->id > job1->next->id) {
           swapNodes(job1, job1->next);
           swapped = 1;
       }
