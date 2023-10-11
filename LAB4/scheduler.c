@@ -99,7 +99,7 @@ void read_workload_file(char* filename) {
 
 void policy_FIFO(struct job *head) {
   // TODO: Fill this in 
-  printf("\nExecution trace with FIFO\n");
+  printf("Execution trace with FIFO:\n");
   int count = 0;
   struct job* current = head;
   
@@ -111,7 +111,7 @@ void policy_FIFO(struct job *head) {
 
     current = current->next;
   }
-  printf("End of execution with FIFO.\n");;
+  printf("End of execution with FIFO.\n");
   return;
 }
 
@@ -147,6 +147,7 @@ void analyze_FIFO(struct job *head) {
 /*------------------------------------------SJF-------------------------------------------*/
 
 void policy_SJF(struct job* head) {
+  printf("Execution trace with SJF:\n");
   sortList(head);
   int count = 0;  
   struct job* current = head;
@@ -158,6 +159,8 @@ void policy_SJF(struct job* head) {
     count += current->length;
     current = current->next;
   }
+
+  printf("End of execution with FIFO.\n");
 }
 
 void analyze_SJF(struct job* head) {
