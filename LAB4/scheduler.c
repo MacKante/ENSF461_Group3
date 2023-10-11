@@ -161,9 +161,8 @@ void policy_SJF(struct job* head) {
 }
 
 void analyze_SJF(struct job* head) {
-  sortID(head);
   struct job* current = head;
-
+  
   float ave_Response = 0;
   float ave_Turnaround = 0;
   float total_Response = 0;
@@ -175,18 +174,19 @@ void analyze_SJF(struct job* head) {
     int turnaround = current->length + current->startTime - current->arrival;
     printf("Job %d -- Response time: %d Turnaround: %d Wait: %d\n",
             current->id, current->startTime, turnaround, response);
-    
+
     total_Response += current->startTime;
     total_Turnaround += turnaround;
     current = current->next;
     i++;
   }
-
   ave_Response = total_Response / i;
   ave_Turnaround = total_Turnaround / i;
   printf("Average -- Response: %.2f Turnaround %.2f Wait %.2f\n",
           ave_Response, ave_Turnaround, ave_Response);
   
+  sortList(head);
+
   return;
   
 }
@@ -225,6 +225,7 @@ int main(int argc, char **argv) {
     policy_SJF(head);
     if (analysis) {
       printf("Begin analyzing SJF:\n");
+      sortID(head);
       analyze_SJF(head);
       printf("End analyzing SJF.\n");
     }
