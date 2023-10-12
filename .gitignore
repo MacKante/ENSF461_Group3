@@ -1,10 +1,15 @@
 *.out
 
+# Folders to ignore
+__MACOSX/
+
+# Lab 4 Files to keep
 !example_fifo.out
 !example_fifo_analysis.out
 !example_sjf.out
 !example_sjf_analysis.out
 
+# Lab 5 Files to keep
 !example_lt_analysis.out
 !example_rr_analysis.out
 !example_stcf_analysis.out
