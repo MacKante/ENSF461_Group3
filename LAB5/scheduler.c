@@ -108,6 +108,7 @@ void read_workload_file(char* filename) {
 /*---------------------------------------------------*/
 
 void policy_STCF(struct job* head, int slice) {
+  printf("Execution trace with STCF:\n");
   int timer = 0;
 
   while(!isCompleted(head)){
@@ -132,7 +133,7 @@ void policy_STCF(struct job* head, int slice) {
       current->endTime = timer;
     }
   }
-
+  printf("End of execution with STCF.\n");
   return;  
 }
 
