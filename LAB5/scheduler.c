@@ -105,7 +105,7 @@ void read_workload_file(char* filename) {
   return;
 }
 
-/*---------------------------------------------------*/
+/*------------------------------------------------------*/
 
 void policy_STCF(struct job* head, int slice) {
   printf("Execution trace with STCF:\n");
@@ -118,26 +118,29 @@ void policy_STCF(struct job* head, int slice) {
       current->startTime = timer;
     }
 
+    // If remaining time is more than slice, run for slice
     if(current->remainingTime > slice) {
       printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", 
               timer, current->id, current->arrival, slice);
       current->remainingTime -= slice;
       timer += slice;
 
+    // If remaining time is not 0, but not more than slice
+    // (job is not completed), then do final run
     } else if(current->remainingTime != 0){
       printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", 
               timer, current->id, current->arrival, current->remainingTime);
       timer += current->remainingTime;
       current->remainingTime = 0;
 
-      current->endTime = timer;
+      current->endTime = timer; // log end time
     }
   }
   printf("End of execution with STCF.\n");
   return;  
 }
 
-/*---------------------------------------------------*/
+/*------------------------------------------------------*/
 
 void policy_RR(struct job* head, int slice) {
   printf("Execution trace with RR:\n");
@@ -299,6 +302,10 @@ int isCompleted(struct job* head){
   return 1;
 }
 
+// Finds Shortest Job in list of arrived jobs 
+  // pick from jobs that have arrived (arrival < timer)
+  // that is not completed (remaining time is not 0)
+  // Returns pointer to shortest job
 struct job* findShortest(struct job* head, int timer){
   struct job* current = head;
   int minRemainingTime = INT_MAX;
@@ -316,6 +323,7 @@ struct job* findShortest(struct job* head, int timer){
   return shortestJob;
 }
 
+// Analyze Function (All analyzations are the same)
 void analyze(struct job *head) {
   float totalResponse = 0;
   float totalTurnaround = 0;
