@@ -14,10 +14,8 @@ struct job {
   struct job *next;
 
   int length;     // store length
-  int wait;       // amount of timer waited
   int startTime;  // start timer
   int endTime;    // end timer
-  int runCount;   // times run
   
 };
 
@@ -47,7 +45,6 @@ void append(int id, int arrival, int length, int tickets){
   tmp->length = length;
   tmp->startTime = -1;
   tmp->endTime = 0;
-  tmp->runCount = 0;
 
   // the new job is the last job
   tmp->next = NULL;
@@ -112,15 +109,16 @@ void policy_STCF(struct job* head, int slice) {
   int timer = 0;
 
   while(!isCompleted(head)){
-    struct job* current = findShortest(head, timer);
+    struct job* current = findShortest(head, timer); // find shortest job
 
+    // set start time
     if(current->startTime == -1){
       current->startTime = timer;
     }
 
     // If remaining time is more than slice, run for slice
     if(current->remainingTime > slice) {
-      printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", 
+      printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n",
               timer, current->id, current->arrival, slice);
       current->remainingTime -= slice;
       timer += slice;
@@ -148,16 +146,20 @@ void policy_RR(struct job* head, int slice) {
   int timer = 0;
 
   while(!isCompleted(head)) {
+    // Set Start Time
     if(current->startTime == -1){
       current->startTime = timer;
     }
 
+    // If remaining time is more than slice, run for slice
     if(current->remainingTime > slice) {
       printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", 
               timer, current->id, current->arrival, slice);
       current->remainingTime -= slice;
       timer += slice;
 
+    // If remaining time is not 0, but not more than slice
+    // (job is not completed), then do final run
     } else if(current->remainingTime != 0){
       printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", 
               timer, current->id, current->arrival, current->remainingTime);
@@ -165,7 +167,6 @@ void policy_RR(struct job* head, int slice) {
       current->remainingTime = 0;
 
       current->endTime = timer;
-
     }
 
     // Move to the next job cyclically
@@ -184,11 +185,11 @@ void policy_RR(struct job* head, int slice) {
 
 void policy_LT(struct job *head, int slice) {
   printf("Execution trace with LT:\n");
+  srand(seed);
 
   int timer = 0;
   int ticketCount = 0;
-  srand(seed);
-  
+
   // Give Tickets
   struct job* current = head;
   for(int i = 1; current != NULL; i++) {
@@ -198,25 +199,30 @@ void policy_LT(struct job *head, int slice) {
   }
 
   while(!isCompleted(head)){
-    int winner = (rand() % (ticketCount)) + 1;
+    int winner = (rand() % (ticketCount)) + 1; // random number generator in tickets
+    
+    // Find Job that the ticket belongs to
     current = head;
-
     int ticketIndex = current->tickets;
     while (winner > ticketIndex) {
       current = current->next;
       ticketIndex += current->tickets;
     }
 
+    // Set Start Timer
     if(current->startTime == -1){
       current->startTime = timer;
     }
 
+    // If remaining time is more than slice, run for slice
     if(current->remainingTime > slice) {
       printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", 
               timer, current->id, current->arrival, slice);
       timer += slice;
       current->remainingTime -= slice;
 
+    // If remaining time is not 0, but not more than slice
+    // (job is not completed), then do final run
     } else if(current->remainingTime != 0){
       printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", 
               timer, current->id, current->arrival, current->remainingTime);
@@ -312,12 +318,12 @@ struct job* findShortest(struct job* head, int timer){
   struct job *shortestJob = NULL;
   while (current != NULL) {
     int TTC = current->arrival + current->remainingTime;
-      if (TTC < minRemainingTime && current->remainingTime != 0 
-          && timer >= current->arrival) {
-          minRemainingTime = current->remainingTime;
-          shortestJob = current;
-      }
-      current = current->next;
+    if (TTC < minRemainingTime && current->remainingTime != 0 
+        && timer >= current->arrival) {
+        minRemainingTime = current->remainingTime;
+        shortestJob = current;
+    }
+    current = current->next;
   }
 
   return shortestJob;
