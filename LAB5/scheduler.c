@@ -330,7 +330,7 @@ void analyze(struct job *head) {
     int turnaround = current->endTime - current->arrival;
     int wait =  turnaround - current->length;
     
-    printf("Job %d -- Response time: %d Turnaround: %d Wait: %d\n",
+    printf("Job %d -- Response time: %d  Turnaround: %d  Wait: %d\n",
             current->id, response, turnaround, wait);
 
     totalResponse += response;
@@ -343,7 +343,7 @@ void analyze(struct job *head) {
   float aveResponse = totalResponse / i;
   float aveTurnaround = totalTurnaround / i;
   float aveWait = totalWait / i;
-  printf("Average -- Response: %.2f Turnaround %.2f Wait %.2f\n",
+  printf("Average -- Response: %.2f  Turnaround %.2f  Wait %.2f\n",
           aveResponse, aveTurnaround, aveWait);
   return;
 }
