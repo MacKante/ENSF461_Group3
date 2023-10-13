@@ -23,7 +23,10 @@ struct job {
 
 /*** Globals ***/ 
 int seed = 100;
+
+void analyze(struct job* head);
 int isCompleted(struct job* head);
+struct job* findShortest(struct job* head, int timer);
 
 //This is the start of our linked list of jobs, i.e., the job list
 struct job *head = NULL;
@@ -67,7 +70,6 @@ void append(int id, int arrival, int length, int tickets){
   return;
 }
 
-
 /*Function to read in the workload file and create job list*/
 void read_workload_file(char* filename) {
   int id = 0;
@@ -106,41 +108,32 @@ void read_workload_file(char* filename) {
 /*---------------------------------------------------*/
 
 void policy_STCF(struct job* head, int slice) {
-  // TO DO FIXN THIS 
-    struct job* current = head;
-    struct job* next_job = NULL;
-    int timer = 0;
+  int timer = 0;
 
-    while (current != NULL) {
-        // Find the job with the shortest remaining timer
-        next_job = head;
-        while (next_job != NULL) {
-            if (next_job->arrival <= timer) {
-                if (next_job->remainingTime < current->remainingTime) {
-                    current = next_job;
-                }
-            }
-            next_job = next_job->next;
-        }
+  while(!isCompleted(head)){
+    struct job* current = findShortest(head, timer);
 
-        // Execute the current job for 'slice' timer units
-        if (current->remainingTime > slice) {
-            current->remainingTime -= slice;
-            timer += slice;
-            current->wait += slice;
-        } else {
-            timer += current->remainingTime;
-            current->remainingTime = 0;
-        }
-
-        // Move to the next timer unit
-        current = current->next;
+    if(current->startTime == -1){
+      current->startTime = timer;
     }
-}
-void analyze_STCF(struct job *head) {
-  // TODO: Fill this in
 
-  return;
+    if(current->remainingTime > slice) {
+      printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", 
+              timer, current->id, current->arrival, slice);
+      current->remainingTime -= slice;
+      timer += slice;
+
+    } else if(current->remainingTime != 0){
+      printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", 
+              timer, current->id, current->arrival, current->remainingTime);
+      timer += current->remainingTime;
+      current->remainingTime = 0;
+
+      current->endTime = timer;
+    }
+  }
+
+  return;  
 }
 
 /*---------------------------------------------------*/
@@ -150,8 +143,8 @@ void policy_RR(struct job* head, int slice) {
   struct job* current = head;
   int timer = 0;
 
-  while(isCompleted(head) != 1) {
-    if(timer < current->startTime || current->startTime == -1){
+  while(!isCompleted(head)) {
+    if(current->startTime == -1){
       current->startTime = timer;
     }
 
@@ -183,37 +176,6 @@ void policy_RR(struct job* head, int slice) {
   return;
 }
 
-void analyze_RR(struct job *head) {
-  float totalResponse = 0;
-  float totalTurnaround = 0;
-  float totalWait = 0;
-  
-  int i = 0;
-
-  struct job* current = head;
-
-  while(current != NULL) {
-    int response = current->startTime - current->arrival;
-    int turnaround = current->endTime - current->arrival;
-    int wait =  turnaround - current->length;
-    
-    printf("Job %d -- Response time: %d Turnaround: %d Wait: %d\n",
-            current->id, response, turnaround, wait);
-
-    totalResponse += response;
-    totalTurnaround += turnaround;
-    totalWait += wait;
-    current = current->next;
-    i++;
-  }
-  
-  float aveResponse = totalResponse / i;
-  float aveTurnaround = totalTurnaround / i;
-  float aveWait = totalWait / i;
-  printf("Average -- Response: %.2f Turnaround %.2f Wait %.2f\n",
-          aveResponse, aveTurnaround, aveWait);
-  return;
-}
 /*------------------------------------------------------*/
 
 void policy_LT(struct job *head, int slice) {
@@ -231,7 +193,7 @@ void policy_LT(struct job *head, int slice) {
     current = current->next;
   }
 
-  while(isCompleted(head) != 1){
+  while(!isCompleted(head)){
     int winner = (rand() % (ticketCount)) + 1;
     current = head;
 
@@ -264,7 +226,96 @@ void policy_LT(struct job *head, int slice) {
   return;
 }
 
-void analyze_LT(struct job *head) {
+/*------------------------------------------------------*/
+
+int main(int argc, char **argv) {
+
+ if (argc < 5) {
+    fprintf(stderr, "missing variables\n");
+    fprintf(stderr, "usage: %s analysis-flag policy workload-file slice-length\n", argv[0]);
+		exit(EXIT_FAILURE);
+  }
+
+  int analysis = atoi(argv[1]);
+  char *policy = argv[2],
+       *workload = argv[3];
+  int slice = atoi(argv[4]);
+
+  // Note: we use a global variable to point to 
+  // the start of a linked-list of jobs, i.e., the job list 
+  read_workload_file(workload);
+
+  if (strcmp(policy, "STCF") == 0 ) {
+    policy_STCF(head, slice);
+    if (analysis) {
+      printf("Begin analyzing STCF:\n");
+      analyze(head);
+      printf("End analyzing STCF.\n");
+    }
+
+    exit(EXIT_SUCCESS);
+  }
+
+  if (strcmp(policy, "RR") == 0 ) {
+    policy_RR(head, slice);
+    if (analysis) {
+      printf("Begin analyzing RR:\n");
+      analyze(head);
+      printf("End analyzing RR.\n");
+    }
+
+    exit(EXIT_SUCCESS);
+  }
+
+  if (strcmp(policy, "LT") == 0 ) {
+    policy_LT(head, slice);
+    if (analysis) {
+      printf("Begin analyzing LT:\n");
+      analyze(head);
+      printf("End analyzing LT.\n");
+    }
+
+    exit(EXIT_SUCCESS);
+  } 
+
+	exit(EXIT_SUCCESS);
+}
+
+// Check if the jobs are completed
+  // Return 0 if incomplete
+  // Return 1 if complete
+int isCompleted(struct job* head){
+  struct job* temp = head;
+  while(1){
+    if(temp->remainingTime != 0){
+      return 0;
+    } else if (temp->next != NULL) {
+      temp = temp->next;
+    } else {
+      break;
+    }
+  }
+  return 1;
+}
+
+struct job* findShortest(struct job* head, int timer){
+  struct job* current = head;
+  int minRemainingTime = INT_MAX;
+  struct job *shortestJob = NULL;
+  while (current != NULL) {
+    int TTC = current->arrival + current->remainingTime;
+      if (TTC < minRemainingTime && current->remainingTime != 0 
+          && timer >= current->arrival) {
+          minRemainingTime = current->remainingTime;
+          shortestJob = current;
+      }
+      current = current->next;
+  }
+
+  return shortestJob;
+}
+
+void analyze(struct job *head) {
   float totalResponse = 0;
   float totalTurnaround = 0;
   float totalWait = 0;
@@ -294,78 +345,4 @@ void analyze_LT(struct job *head) {
   printf("Average -- Response: %.2f Turnaround %.2f Wait %.2f\n",
           aveResponse, aveTurnaround, aveWait);
   return;
-}
-
-/*------------------------------------------------------*/
-
-int main(int argc, char **argv) {
-
- if (argc < 5) {
-    fprintf(stderr, "missing variables\n");
-    fprintf(stderr, "usage: %s analysis-flag policy workload-file slice-length\n", argv[0]);
-		exit(EXIT_FAILURE);
-  }
-
-  int analysis = atoi(argv[1]);
-  char *policy = argv[2],
-       *workload = argv[3];
-  int slice = atoi(argv[4]);
-
-  // Note: we use a global variable to point to 
-  // the start of a linked-list of jobs, i.e., the job list 
-  read_workload_file(workload);
-
-  if (strcmp(policy, "STCF") == 0 ) {
-    policy_STCF(head, slice);
-    if (analysis) {
-      printf("Begin analyzing STCF:\n");
-      analyze_STCF(head);
-      printf("End analyzing STCF.\n");
-    }
-
-    exit(EXIT_SUCCESS);
-  }
-
-  // TODO: Add other policies
-
-  if (strcmp(policy, "RR") == 0 ) {
-    policy_RR(head, slice);
-    if (analysis) {
-      printf("Begin analyzing RR:\n");
-      analyze_RR(head);
-      printf("End analyzing RR.\n");
-    }
-
-    exit(EXIT_SUCCESS);
-  }
-
-  if (strcmp(policy, "LT") == 0 ) {
-    policy_LT(head, slice);
-    if (analysis) {
-      printf("Begin analyzing LT:\n");
-      analyze_LT(head);
-      printf("End analyzing LT.\n");
-    }
-
-    exit(EXIT_SUCCESS);
-  } 
-
-	exit(EXIT_SUCCESS);
-}
-
-// Check if the jobs are completed
-  // Return 0 if incomplete
-  // Return 1 if complete
-int isCompleted(struct job* head){
-  struct job* temp = head;
-  while(1){
-    if(temp->remainingTime != 0){
-      return 0;
-    } else if (temp->next != NULL) {
-      temp = temp->next;
-    } else {
-      break;
-    }
-  }
-  return 1;
 }
