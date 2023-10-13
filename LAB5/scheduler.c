@@ -229,6 +229,9 @@ void policy_LT(struct job *head, int slice) {
       timer += current->remainingTime;
       current->remainingTime = 0;
       current->endTime = timer;
+
+      ticketCount -= current->tickets;
+      current->tickets = 0;
     }
   }
 
