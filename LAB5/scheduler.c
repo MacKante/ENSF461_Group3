@@ -9,10 +9,11 @@
 struct job {
   int id;
   int arrival;
-  int length;
+  int remainingTime; // time remaining
   int tickets;
   struct job *next;
 
+  int length;     // store length
   int wait;       // amount of timer waited
   int startTime;  // start timer
   int endTime;    // end timer
@@ -36,13 +37,13 @@ void append(int id, int arrival, int length, int tickets){
 
   //tmp->id = numofjobs++;
   tmp->id = id;
-  tmp->length = length;
+  tmp->remainingTime = length;
   tmp->arrival = arrival;
   tmp->tickets = tickets;
 
-  tmp->wait = 0;
+  tmp->length = length;
   tmp->startTime = -1;
-  tmp->endTime = length;
+  tmp->endTime = 0;
   tmp->runCount = 0;
 
   // the new job is the last job
@@ -88,7 +89,7 @@ void read_workload_file(char* filename) {
     length = strtok(NULL, ",\n");
     tickets += 100;
        
-    // Make sure neither arrival nor length are null. 
+    // Make sure neither arrival nor remainingTime are null. 
     assert(arrival != NULL && length != NULL);
         
     append(id++, atoi(arrival), atoi(length), tickets);
@@ -115,7 +116,7 @@ void policy_STCF(struct job* head, int slice) {
         next_job = head;
         while (next_job != NULL) {
             if (next_job->arrival <= timer) {
-                if (next_job->length < current->length) {
+                if (next_job->remainingTime < current->remainingTime) {
                     current = next_job;
                 }
             }
@@ -123,13 +124,13 @@ void policy_STCF(struct job* head, int slice) {
         }
 
         // Execute the current job for 'slice' timer units
-        if (current->length > slice) {
-            current->length -= slice;
+        if (current->remainingTime > slice) {
+            current->remainingTime -= slice;
             timer += slice;
             current->wait += slice;
         } else {
-            timer += current->length;
-            current->length = 0;
+            timer += current->remainingTime;
+            current->remainingTime = 0;
         }
 
         // Move to the next timer unit
@@ -154,19 +155,20 @@ void policy_RR(struct job* head, int slice) {
       current->startTime = timer;
     }
 
-    if(current->length > slice) {
+    if(current->remainingTime > slice) {
       printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", 
               timer, current->id, current->arrival, slice);
-      current->length -= slice;
+      current->remainingTime -= slice;
       timer += slice;
-      current->wait += 1;
 
-    } else if(current->length != 0){
+    } else if(current->remainingTime != 0){
       printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", 
-              timer, current->id, current->arrival, current->length);
-      timer += current->length;
-      current->wait *= slice;
-      current->length = 0;
+              timer, current->id, current->arrival, current->remainingTime);
+      timer += current->remainingTime;
+      current->remainingTime = 0;
+
+      current->endTime = timer;
+
     }
 
     // Move to the next job cyclically
@@ -192,14 +194,15 @@ void analyze_RR(struct job *head) {
 
   while(current != NULL) {
     int response = current->startTime - current->arrival;
-    int turnaround = current->endTime + current->wait;
+    int turnaround = current->endTime - current->arrival;
+    int wait =  turnaround - current->length;
     
     printf("Job %d -- Response time: %d Turnaround: %d Wait: %d\n",
-            current->id, response, turnaround, current->wait);
+            current->id, response, turnaround, wait);
 
     totalResponse += response;
     totalTurnaround += turnaround;
-    totalWait += current->wait;
+    totalWait += wait;
     current = current->next;
     i++;
   }
@@ -211,27 +214,23 @@ void analyze_RR(struct job *head) {
           aveResponse, aveTurnaround, aveWait);
   return;
 }
-
 /*------------------------------------------------------*/
 
 void policy_LT(struct job *head, int slice) {
   printf("Execution trace with LT:\n");
 
   int timer = 0;
-
-  struct job* current = head;
   int ticketCount = 0;
+  srand(seed);
+  
+  // Give Tickets
+  struct job* current = head;
   for(int i = 1; current != NULL; i++) {
     current->tickets = i * 100;
     ticketCount += i * 100;
     current = current->next;
   }
 
-  // [1 - 100] [101 - 300] [301 - 600] [601 - 1000]
-  
-
-  srand(seed);
-  
   while(isCompleted(head) != 1){
     int winner = (rand() % (ticketCount)) + 1;
     current = head;
@@ -242,26 +241,22 @@ void policy_LT(struct job *head, int slice) {
       ticketIndex += current->tickets;
     }
 
-    
-    if(timer < current->startTime || current->startTime == -1){
+    if(current->startTime == -1){
       current->startTime = timer;
     }
 
-    if(current->length > slice) {
+    if(current->remainingTime > slice) {
       printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", 
               timer, current->id, current->arrival, slice);
-
-      current->length -= slice;
       timer += slice;
-      current->runCount += 1;
+      current->remainingTime -= slice;
 
-    } else if(current->length != 0){
+    } else if(current->remainingTime != 0){
       printf("t=%d: [Job %d] arrived at [%d], ran for: [%d]\n", 
-              timer, current->id, current->arrival, current->length);
-      timer += current->length;
-      current->runCount += 1;
-      current->wait = timer - (current->runCount * slice);
-      current->length = 0;
+              timer, current->id, current->arrival, current->remainingTime);
+      timer += current->remainingTime;
+      current->remainingTime = 0;
+      current->endTime = timer;
     }
   }
 
@@ -280,14 +275,15 @@ void analyze_LT(struct job *head) {
 
   while(current != NULL) {
     int response = current->startTime - current->arrival;
-    int turnaround = current->endTime + current->wait;
+    int turnaround = current->endTime - current->arrival;
+    int wait =  turnaround - current->length;
     
     printf("Job %d -- Response time: %d Turnaround: %d Wait: %d\n",
-            current->id, response, turnaround, current->wait);
+            current->id, response, turnaround, wait);
 
     totalResponse += response;
     totalTurnaround += turnaround;
-    totalWait += current->wait;
+    totalWait += wait;
     current = current->next;
     i++;
   }
@@ -363,7 +359,7 @@ int main(int argc, char **argv) {
 int isCompleted(struct job* head){
   struct job* temp = head;
   while(1){
-    if(temp->length != 0){
+    if(temp->remainingTime != 0){
       return 0;
     } else if (temp->next != NULL) {
       temp = temp->next;
