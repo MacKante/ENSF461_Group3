@@ -2,6 +2,7 @@
 
 # Folders to ignore
 __MACOSX/
+.vscode/
 
 # Lab 4 Files to keep
 !example_fifo.out
