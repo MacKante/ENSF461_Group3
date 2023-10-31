@@ -17,3 +17,7 @@ __MACOSX/
 
 # Lab 6 files to keep
 !tests.out
+
+# Lab 6 files to ignore
+LAB6/*/myalloc
+LAB6/*/myalloc.h
