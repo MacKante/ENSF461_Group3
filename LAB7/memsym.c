@@ -3,6 +3,8 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include <math.h>
+
 #define TRUE 1
 #define FALSE 0
 
@@ -11,6 +13,12 @@ FILE* output_file;
 
 // TLB replacement strategy (FIFO or LRU)
 char* strategy;
+
+// Globals
+int isdefined = 0;
+
+u_int32_t r1;
+u_int32_t r2;
 
 char** tokenize_input(char* input) {
     char** tokens = NULL;
@@ -64,6 +72,19 @@ int main(int argc, char* argv[]) {
         char** tokens = tokenize_input(buffer);
 
         // TODO: Implement your memory simulator
+        if (strcmp(strategy, "define")){
+            
+            define();
+            isdefined += 1;
+        }
+
+        if(isdefined > 1){
+            perror("Error: multiple calls to define in the same trace");
+        } else if (isdefined == 0){
+            perror("Error: attempt to execute instruction before define");
+        } else if(isdefined == 1){
+            // Do it
+        }
 
         // Deallocate tokens
         for (int i = 0; tokens[i] != NULL; i++)
@@ -76,4 +97,87 @@ int main(int argc, char* argv[]) {
     fclose(output_file);
 
     return 0;
+}
+
+void* define(int OFF, int PFN, int VPN){
+    
+    
+            
+    int size = pow(2, (OFF + PFN));
+    u_int32_t arr[size];
+
+    for (int i = 0; i < size; i++){
+        arr[i] = 0;
+    }
+    
+
+    printf("Memory instantiation complete. OFF bits: %d. PFN bits: %d. VPN bits: %d",
+            OFF, PFN, VPN);
+
+}
+
+void* ctxswitch(pid_t pid){
+// sets the pid as the one currently executprintf("Memory instantiation complete. OFF bits: %d. PFN bits: %d. VPN bits: %d",
+//     All memory translations
+// and mapping should refer to the currently active process
+// at the beginning the active process should be process 0
+// When context switching, the current values of registers should be saved so
+// that it can be restored when the process is scheduled again
+// • It must output:
+// Switched execution context to process <pid>
+
+
+
+}
+
+void* map(int VPN, int PFN){
+
+}
+
+void* unmap(int VPN){
+
+}
+
+void* pinspect(int VPN){
+
+}
+
+void* tinspect(int TLBN){
+
+}
+
+void* linspect(u_int32_t PL){
+
+}
+
+void* rinspect(char* rN){
+
+//    printf("Inspected register <%s>. Content: %d", rN, content);
+    u_int32_t *reg;
+    if(strcmp(rN, "r1") == 0){
+        reg = &r1;
+    } else if(strcmp(rN, 'r2') == 0){
+        reg = &r2;
+    }
+    else{
+        printf("Unknown register is passed in");
+        exit(1);
+    }
+}
+
+u_int32_t load(char* rN){
+    u_int32_t *reg;
+    // checks to see the value of RN and see if its valid
+    if(strcmp(rN, "r1") == 0){
+        reg = &r1;
+    } else if(strcmp(rN, 'r2') == 0){
+        reg = &r2;
+    }
+    else{
+        printf("Unknown register is passed");
+        exit(1);
+    }
+    
+    // loads the value
+    
 }
