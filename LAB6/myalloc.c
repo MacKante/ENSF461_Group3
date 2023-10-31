@@ -107,16 +107,15 @@ extern void* myalloc(size_t size) {
             }
 
             printf("updating chunk header at %p\n", (void*)to_alloc);
-
             to_alloc->is_free = 0;
             to_alloc->bwd = current->bwd;
 
             printf("...being careful with my pointer arthimetic and void pointer casting\n");
             void* alloc_data = (void*)((char*)current + sizeof(node_t));
-
             printf("...allocation starts at %p\n", alloc_data);
 
             return alloc_data;
+            
         } else {
             current = current->fwd;
         }
