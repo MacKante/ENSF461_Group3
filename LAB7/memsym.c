@@ -72,17 +72,16 @@ int main(int argc, char* argv[]) {
         char** tokens = tokenize_input(buffer);
 
         // TODO: Implement your memory simulator
-        if (strcmp(strategy, "define")){
+        if (strcmp(strategy, "define") == 0){
             
-            define();
+            //define();     // Call define
             isdefined += 1;
         }
 
-        if(isdefined > 1){
-            perror("Error: multiple calls to define in the same trace");
-        } else if (isdefined == 0){
+        else if (isdefined == 0){       // if define has not been called, exit with error
             perror("Error: attempt to execute instruction before define");
-        } else if(isdefined == 1){
+            exit(1);
+        } else if(isdefined == 1){      // if define has been called once, do it
             // Do it
         }
 
@@ -100,20 +99,22 @@ int main(int argc, char* argv[]) {
 }
 
 void* define(int OFF, int PFN, int VPN){
-    
-    
-            
-    int size = pow(2, (OFF + PFN));
-    u_int32_t arr[size];
+    if(isdefined >= 1){     // check for defined 
+        perror("Error: multiple calls to define in the same trace\n");
+        exit(1);
+    } else {
+        int size = pow(2, (OFF + PFN));
+        u_int32_t arr[size];
 
-    for (int i = 0; i < size; i++){
-        arr[i] = 0;
+        for (int i = 0; i < size; i++){
+            arr[i] = 0;
+        }
+        
+        printf("Memory instantiation complete. OFF bits: %d. PFN bits: %d. VPN bits: %d\n",
+                OFF, PFN, VPN);
+
+        return arr;
     }
-    
-
-    printf("Memory instantiation complete. OFF bits: %d. PFN bits: %d. VPN bits: %d",
-            OFF, PFN, VPN);
-
 }
 
 void* ctxswitch(pid_t pid){
@@ -131,7 +132,6 @@ void* ctxswitch(pid_t pid){
 }
 
 void* map(int VPN, int PFN){
-
 }
 
 void* unmap(int VPN){
