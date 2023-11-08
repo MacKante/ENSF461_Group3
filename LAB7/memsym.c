@@ -14,12 +14,58 @@ FILE* output_file;
 // TLB replacement strategy (FIFO or LRU)
 char* strategy;
 
-// Globals
+/*----------------------- Global Variables -----------------------*/
 int isdefined = 0;
 
+// registers
 u_int32_t r1;
 u_int32_t r2;
 
+// For storing register values when context switching
+// Each process saves the values of r1 and r2
+typedef struct {
+    u_int32_t r1Saved;
+    u_int32_t r2Saved;
+} processReg;
+// array of saved register values for context switching
+processReg regCache[4];
+
+// physical memory
+u_int32_t* pMem;           
+
+/*
+Protection Bits Index
+    0 : none
+    1 : read
+    2 : write
+    3 : both
+*/
+// Structure Definitions
+// TLB Entry
+typedef struct {
+    u_int32_t VPN;
+    u_int32_t PFN;
+    u_int8_t valid;
+    u_int8_t protect;
+} TLBEntry;
+// TLB
+TLBEntry TLB[8];
+
+// Page Table Entry
+typedef struct {
+    u_int8_t valid;
+    u_int8_t PID;    
+    u_int32_t PFN;
+    u_int8_t protect;
+} PTEntry;
+
+// PageTable
+PTEntry PageTable[4];
+
+// current process
+PTEntry* currentProcess;
+
+/*------------------------- BASE CODE -------------------------*/
 char** tokenize_input(char* input) {
     char** tokens = NULL;
     char* token = strtok(input, " ");
@@ -72,43 +118,44 @@ int main(int argc, char* argv[]) {
         char** tokens = tokenize_input(buffer);
 
         // TODO: Implement your memory simulator
-        if (strcmp(strategy, "define") == 0){
-            
-            //define();     // Call define
-            isdefined += 1;
+        if (strcmp(tokens[0], "define") == 0){
+            isdefined += 1;           
+            define(tokens[1], tokens[2], tokens[3]);     // Call define
+
         } else if (isdefined == 0){       // if define has not been called, exit with error
             perror("Error: attempt to execute instruction before define");
             exit(1);
+
         } else if(isdefined == 1){      // if define has been called once, do it
-            if (strcmp(strategy, "ctxswitch") == 0){
-                // ctxswitch();      // Call ctxswitch
+            if (strcmp(tokens[0], "ctxswitch") == 0){
+                ctxswitch(tokens[1]);      // Call ctxswitch
             }
-            if (strcmp(strategy, "map") == 0){
-
+            if (strcmp(tokens[0], "map") == 0){
+                map(tokens[1], tokens[2]);
             }
-            if (strcmp(strategy, "unmap") == 0){
-
+            if (strcmp(tokens[0], "unmap") == 0){
+                unmap(tokens[1]);
             }
-            if (strcmp(strategy, "pinspect") == 0){
-
+            if (strcmp(tokens[0], "pinspect") == 0){
+                pinspect(tokens[1]);
             }
-            if (strcmp(strategy, "tinspect") == 0){
-
+            if (strcmp(tokens[0], "tinspect") == 0){
+                tinspect(tokens[1]);
             }
-            if (strcmp(strategy, "linspect") == 0){
-
+            if (strcmp(tokens[0], "linspect") == 0){
+                linspect(tokens[1]);
             }
-            if (strcmp(strategy, "rinspect") == 0){
-
+            if (strcmp(tokens[0], "rinspect") == 0){
+                rinspect(tokens[1]);
             }
-            if (strcmp(strategy, "load") == 0){
-
+            if (strcmp(tokens[0], "load") == 0){
+                load(tokens[1], tokens[2]);
             }
-            if (strcmp(strategy, "store") == 0){
-
+            if (strcmp(tokens[0], "store") == 0){
+                store(tokens[1], tokens[2]);
             }
-            if (strcmp(strategy, "add") == 0){
-
+            if (strcmp(tokens[0], "add") == 0){
+                add();
             }
             
         }
@@ -126,89 +173,140 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-/*----------------------OUR FUNCTIONS*----------------------*/
+/*---------------------- OUR FUNCTIONS ----------------------*/
 
-void* define(int OFF, int PFN, int VPN){
-    if(isdefined >= 1){     // check for defined 
+void define(char* OFF, char* PFN, char* VPN){
+    if(isdefined != 0){     // check for defined 
         perror("Error: multiple calls to define in the same trace\n");
         exit(1);
     } else {
-        int size = pow(2, (OFF + PFN));
-        u_int32_t arr[size];
+        int off = atoi(OFF);
+        int pfn = atoi(PFN);
+        int vpn = atoi(VPN);
 
-        for (int i = 0; i < size; i++){
-            arr[i] = 0;
-        }
+        // Set Physical Memory
+        int psize = pow(2, (off + pfn));
+        pMem = (u_int32_t*)calloc(psize, sizeof(u_int32_t));
+
         
+        // Initialize page table entries
+        for(int i = 0; i < 4; i++) {
+            PageTable[i].valid = 0;
+            PageTable[i].PID = i;
+        }
+
+        // Initialize Current 
+        currentProcess = &PageTable[0];
+
         printf("Memory instantiation complete. OFF bits: %d. PFN bits: %d. VPN bits: %d\n",
-                OFF, PFN, VPN);
-
-        return arr;
+                off, pfn, vpn);
     }
+
+    return;
 }
 
-void* ctxswitch(pid_t pid){
-// Set the process <pid> as the one currently executing, saving existing state
-// (e.g. register values)
-//     All memory translations
-// and mapping should refer to the currently active process
-// at the beginning the active process should be process 0
-// When context switching, the current values of registers should be saved so
-// that it can be restored when the process is scheduled again
-// • It must output:
-// Switched execution context to process <pid>
+void ctxswitch(char* PID){
+    u_int8_t pid = atoi(PID);
+    
+    if(pid < 0 || pid > 3){
+        fprintf(stderr,"Invalid context switch to process %d\n", pid);
+        exit(1);
+        
+    } else {
+        // Saving current process's registers
+        regCache[currentProcess->PID].r1Saved = r1;
+        regCache[currentProcess->PID].r2Saved = r2;
 
+        // Restoring Registers to State of process with pid 
+        r1 = regCache[pid].r1Saved;
+        r2 = regCache[pid].r2Saved;
+        
+        // set current process to the one specified by PID argument
+        currentProcess = &PageTable[pid];
+        printf("Switched execution context to process %d\n", pid);
+    }
 
+    return;
+}
+
+void* map(char* VPN, char* PFN){
+}
+
+void* unmap(char* VPN){
 
 }
 
-void* map(int VPN, int PFN){
-}
-
-void* unmap(int VPN){
+void* pinspect(char* VPN){
 
 }
 
-void* pinspect(int VPN){
+void* tinspect(char* TLBN){
 
 }
 
-void* tinspect(int TLBN){
-
-}
-
-void* linspect(u_int32_t PL){
+void* linspect(char* PL){
 
 }
 
 void* rinspect(char* rN){
 
-//    printf("Inspected register <%s>. Content: %d", rN, content);
-    u_int32_t *reg;
-    if(strcmp(rN, "r1") == 0){
-        reg = &r1;
-    } else if(strcmp(rN, 'r2') == 0){
-        reg = &r2;
-    }
-    else{
-        printf("Unknown register is passed in");
-        exit(1);
-    }
 }
 
-u_int32_t load(char* rN){
-    u_int32_t *reg;
-    // checks to see the value of RN and see if its valid
-    if(strcmp(rN, "r1") == 0){
-        reg = &r1;
-    } else if(strcmp(rN, 'r2') == 0){
-        reg = &r2;
+void load(char* dst, char* src){
+    u_int32_t* dest;
+
+    if(strcmp(dst, "r1") == 0){
+        dest = &r1;
+    } else if(strcmp(dst, "r2") == 0){
+        dest = &r2;
+    } else {
+        fprintf(stderr,"Error: invalid register operand %s\n", dst);
+        exit(1);
     }
-    else{
-        printf("Unknown register is passed");
+
+    if (src[0] == '#' && src[1] != '\0') {
+        // load immediate <dst> into  register <dst>
+        *dest = atoi(src + 1);
+        printf("Loaded immediate %s into register %s", src, dst);
+    } else {
+        u_int32_t loadedValue;
+        // load the value of memory location <src> into register <dst>
+        /* loadedValue = Memory Location Value ??? */
+        printf("Loaded value of location %s ( %u ) into register %s", src, loadedValue, dest);
+    }
+
+}
+
+void store(char* dst, char* src){
+    u_int32_t* dest;
+    u_int32_t source;
+    
+    if(src[0] == "#"){ // if immediate
+        src++;
+        u_int32_t source = atoi(src);
+        // memory_location = source;      // store immediate in memory location
+        printf("Stored immediate %s into location %s\n", src, dst);
+        return;
+
+    } else if(strcmp(src, "r1") == 0){    // if register r1
+        source = r1;
+        // memory_location = source;      // store value of r1 in memory location
+
+    } else if(strcmp(src, "r2") == 0){    // if register r2
+        source = r2;
+        // memory_location = source;      // store immediate in memory location
+        
+    } else {
+        fprintf(stderr,"Error: invalid register operand %s\n", src);
         exit(1);
     }
     
-    // loads the value
-    
+    return;
+}
+
+void add(){
+    // Add the values in registers r1 and r2 and stores the result in r1
+    r1 += r2;
+    printf("Added register r1 (%d) to register r2 (%d). Result: %d\n", r1 - r2, r2, r1);
+    return;
 }
