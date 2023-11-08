@@ -76,13 +76,41 @@ int main(int argc, char* argv[]) {
             
             //define();     // Call define
             isdefined += 1;
-        }
-
-        else if (isdefined == 0){       // if define has not been called, exit with error
+        } else if (isdefined == 0){       // if define has not been called, exit with error
             perror("Error: attempt to execute instruction before define");
             exit(1);
         } else if(isdefined == 1){      // if define has been called once, do it
-            // Do it
+            if (strcmp(strategy, "ctxswitch") == 0){
+                // ctxswitch();      // Call ctxswitch
+            }
+            if (strcmp(strategy, "map") == 0){
+
+            }
+            if (strcmp(strategy, "unmap") == 0){
+
+            }
+            if (strcmp(strategy, "pinspect") == 0){
+
+            }
+            if (strcmp(strategy, "tinspect") == 0){
+
+            }
+            if (strcmp(strategy, "linspect") == 0){
+
+            }
+            if (strcmp(strategy, "rinspect") == 0){
+
+            }
+            if (strcmp(strategy, "load") == 0){
+
+            }
+            if (strcmp(strategy, "store") == 0){
+
+            }
+            if (strcmp(strategy, "add") == 0){
+
+            }
+            
         }
 
         // Deallocate tokens
@@ -97,6 +125,8 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
+
+/*----------------------OUR FUNCTIONS*----------------------*/
 
 void* define(int OFF, int PFN, int VPN){
     if(isdefined >= 1){     // check for defined 
@@ -118,7 +148,8 @@ void* define(int OFF, int PFN, int VPN){
 }
 
 void* ctxswitch(pid_t pid){
-// sets the pid as the one currently executprintf("Memory instantiation complete. OFF bits: %d. PFN bits: %d. VPN bits: %d",
+// Set the process <pid> as the one currently executing, saving existing state
+// (e.g. register values)
 //     All memory translations
 // and mapping should refer to the currently active process
 // at the beginning the active process should be process 0
