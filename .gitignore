@@ -25,3 +25,6 @@ mytest.c
 
 # Lab 7 files to keep
 !LAB7/*/*.out
+
+# Lab 8 files to keep
+!LAB8/*/*.out
