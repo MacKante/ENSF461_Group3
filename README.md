@@ -1,4 +1,4 @@
-# ENSF461_Group3
+# ENSF 461: Applied Operating Systems, Group 3
 ## Dominic Choi
 ### UCID: 30109955
 ## Nathan Ante
