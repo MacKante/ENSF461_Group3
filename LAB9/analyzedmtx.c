@@ -154,6 +154,14 @@ void generate_dmtx_seq() {
 
     for ( int i = 0; i < numfiles; i++) {
         // Get and save the message from each of the files in the dtmx folder 
+                char* message = scandmtx(filelist[i].filename);
+        if ( message == NULL ) {
+            strcpy(filelist[i].message, "Error: Could not read file\n");
+        } else {
+            strcpy(filelist[i].message, message);
+        }
+
+
     } 
 
     closedmtx();
