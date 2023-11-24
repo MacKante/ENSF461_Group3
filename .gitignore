@@ -31,3 +31,6 @@ LAB7/*/*.txt
 
 # Lab 8 files to keep
 !LAB8/*/*.out
+
+# Lab 8 files to ignore
+LAB8/*/*.txt
